@@ -7,11 +7,12 @@ function App() {
   const textInputRef = useRef(null);
   const [memes, setMemes] = useState([]);
   const [showGallery, setShowGallery] = useState(false);
+  const [sharedUrl, setSharedUrl] = useState(null);
 
   const CANVAS_WIDTH = 700;
   const CANVAS_HEIGHT = 700;
 
-  // 파일 선택 시 실행되는 함수
+  // 파일 선택 시 캔버스에 이미지 띄우기
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -22,6 +23,7 @@ function App() {
 
     image.onload = () => {
       const ctx = canvasRef.current.getContext("2d");
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.drawImage(image, 0, 0, CANVAS_WIDTH ,CANVAS_HEIGHT);
       fileInputRef.current.value = null; // 파일 input 초기화
     };
@@ -40,28 +42,72 @@ function App() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    ctx.save();
-    ctx.lineWidth = 1;
     ctx.font = "48px sans-serif";
     ctx.fillStyle = "green";
     ctx.fillText(text, x, y);
-    ctx.restore();
   };
 
+  // 서버에 이미지 업로드하기 (base64 문자열 보내기)
+  const uploadImage = async(base64Url) => {
+    try {
+      const response = 
+      await fetch("http://localhost:8080/api/images/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ image : base64Url})
+      });
+
+      if(!response.ok) {
+        throw new Error("업로드 실패");
+      }
+
+      const url = await response.text();
+      return url;
+    } catch(error) {
+      console.error("업로드 중 오류: ", error);
+      return null;
+    }
+  };
+
+  // 공유 버튼 클릭 시 (클립보드 복사 및 새탭 열기)
+  const handleShareClick = () => {
+    if (!sharedUrl) {
+      alert("먼저 이미지를 저장하세요!");
+      return;
+    }
+    navigator.clipboard.writeText(sharedUrl)
+      .then(() => alert("공유 URL이 클립보드에 복사되었습니다!"))
+      .catch(() => alert("복사에 실패했습니다."));
+    window.open(sharedUrl, "_blank");
+  };
+
+
   // 저장 버튼 클릭 시 함수
-  const handleSaveClick = () => {
-    const url = canvasRef.current.toDataURL("image/jpeg", 0.7); // 이미지 URL 얻기
-    // 내 컴퓨터에 다운로드
+  const handleSaveClick = async () => {
+    const base64Url = canvasRef.current.toDataURL("image/jpeg", 0.7); // 이미지 URL 얻기
+    
+    // 1. 내 컴퓨터에 다운로드
     const a = document.createElement("a");
-    a.href = url;
+    a.href = base64Url;
     a.download = "myMeme.jpg";
     a.click();
 
-    // localStorage 저장
-    const newMemes = [...memes, url]; // 기존 배열에 새 밈 추가
+    // 2. localStorage 저장
+    const newMemes = [...memes, base64Url]; // 기존 배열에 새 밈 추가
     localStorage.setItem("memes", JSON.stringify(newMemes)); // 로컬 스토리지에 저장
     setMemes(newMemes);
-  }
+
+    // 3. 서버에 업로드
+    const url = await uploadImage(base64Url);
+    if(url) {
+      setSharedUrl(url);
+      alert("서버 업로드 성공! 공유하려면 공유버튼을 누르세요.");
+    } else {
+      alert("서버 업로드 실패");
+    }
+  };
 
   // 페이지 처음 로드될 때 locaStorage에서 저장된 이미지 불러오기
   useEffect(() => {
@@ -104,6 +150,9 @@ function App() {
         {/* 저장된 이미지 갤러리 */}
         <button onClick={()=> setShowGallery(prev => !prev)}>
           {showGallery? "갤러리 클로즈 🎞️" : "갤러리 오쁜 🎞️"}
+        </button>
+        <button onClick={handleShareClick} disabled={!sharedUrl}>
+          공유하기 🔗
         </button>
       </div>
       <div className={`gallery-sidebar ${showGallery ? "open" : ""}`}>
