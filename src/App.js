@@ -50,23 +50,30 @@ function App() {
   // 서버에 이미지 업로드하기 (base64 문자열 보내기)
   const uploadImage = async(base64Url) => {
     try {
+      console.log("[1] 업로드 시작: base64 문자열 일부 확인 →", base64Url.slice(0, 100)); // 앞 100자만 출력
+      
       const response = 
       await fetch("http://localhost:8080/api/images/upload", {
+      // await fetch("ngrokdomain/api/images/upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ image : base64Url})
       });
+      
+      console.log("[2] 서버 응답 상태 코드:", response.status);
 
       if(!response.ok) {
         throw new Error("업로드 실패");
       }
 
       const url = await response.text();
+      console.log("[3] 서버에서 받은 URL:", url);
+
       return url;
     } catch(error) {
-      console.error("업로드 중 오류: ", error);
+      console.error("[ERROR] 업로드 중 오류 발생:", error);
       return null;
     }
   };
@@ -100,7 +107,9 @@ function App() {
     setMemes(newMemes);
 
     // 3. 서버에 업로드
+    console.log("Uploading...");
     const url = await uploadImage(base64Url);
+    console.log("Response from server: ", url);
     if(url) {
       setSharedUrl(url);
       alert("서버 업로드 성공! 공유하려면 공유버튼을 누르세요.");
