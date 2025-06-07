@@ -42,8 +42,8 @@ function App() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    ctx.font = "48px sans-serif";
-    ctx.fillStyle = "green";
+    ctx.font = "48px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif";
+    // ctx.fillStyle = "green";
     ctx.fillText(text, x, y);
   };
 
@@ -87,7 +87,7 @@ function App() {
     navigator.clipboard.writeText(sharedUrl)
       .then(() => {
         window.open(sharedUrl, "_blank");
-        alert("공유 URL이 클립보드에 복사되었습니다!");
+        alert("공유 URL이 클립보드에 복사되었습니다! \nLe lien a été copié!");
       })
       .catch(() => alert("복사에 실패했습니다."));
   };
@@ -114,7 +114,7 @@ function App() {
     console.log("Response from server: ", url);
     if(url) {
       setSharedUrl(url);
-      alert("서버 업로드 성공! 공유하려면 공유버튼을 누르세요.");
+      alert("서버 업로드 성공! 공유하려면 공유 버튼을 누르세요. \nTéléversement réussi ! Appuyez sur 'Copier le lien 🔗' pour le partager.");
     } else {
       alert("서버 업로드 실패");
     }
@@ -138,7 +138,7 @@ function App() {
       <div className="btns">
         {/* 사진 업로드 */}
         <label htmlFor="file">
-          Add photo
+          Ajouter une photo ➕
           <input 
             type="file" 
             id="file"
@@ -151,23 +151,26 @@ function App() {
         <input 
           type="text" 
           id="text"
-          placeholder="쓰고 더블클릭하세요."
+          placeholder="Écrivez et double-cliquez"
           ref={textInputRef} 
         />
         {/* 이미지 저장하기 */}
         <button id="save" onClick={handleSaveClick}>
-          이미지 저장하기
+          Enregistrer l'image 💾
         </button>
         {/* 저장된 이미지 갤러리 */}
         <button onClick={()=> setShowGallery(prev => !prev)}>
-          {showGallery? "갤러리 클로즈 🎞️" : "갤러리 오쁜 🎞️"}
+          {showGallery? "Fermer la galerie 🎞️" : "Ouvrir la galerie 🎞️"}
         </button>
         <button onClick={handleShareClick} disabled={!sharedUrl}>
-          공유하기 🔗
+          Copier le lien 🔗
+        </button>
+        <button onClick={()=>{window.open("https://x.com/")}} disabled={!sharedUrl}>
+          Partager sur X 🐤
         </button>
       </div>
       <div className={`gallery-sidebar ${showGallery ? "open" : ""}`}>
-        <h2 style={{ fontSize: '30px' }}> 🎞️ My meme gallery 🎞️</h2>
+        <h2 style={{ fontSize: '30px' }}>Ma galerie de mèmes😆</h2>
         {showGallery && (
           <div id="gallery" className="gallery">
             {memes.map((url, index) => (
