@@ -85,6 +85,7 @@ body {
 button, 
 label {
   all: unset;
+  width: 200px;
   padding: 10px 0px;
   text-align: center;
   background-color: cornflowerblue;
