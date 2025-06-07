@@ -85,9 +85,11 @@ function App() {
       return;
     }
     navigator.clipboard.writeText(sharedUrl)
-      .then(() => alert("공유 URL이 클립보드에 복사되었습니다!"))
+      .then(() => {
+        window.open(sharedUrl, "_blank");
+        alert("공유 URL이 클립보드에 복사되었습니다!");
+      })
       .catch(() => alert("복사에 실패했습니다."));
-    window.open(sharedUrl, "_blank");
   };
 
 
